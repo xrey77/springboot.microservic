@@ -1,0 +1,56 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: "spring.cloud.api.gateway"
+  cloud:
+    gateway:
+      globalcors:
+          corsConfigurations:
+            '[/**]':
+              allowedOrigins: "*"
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+              allowedHeaders:
+                - authorization
+                - content-type
+                - x-requested-with
+                - cache-control
+                - x-xsrf-token
+                - accept
+                - origin
+                - x-file-name    
+      discovery:
+        locator:
+          enabled: true    
+      routes:
+      - id: users-service
+        uri: http://localhost:8091
+        predicates:
+          - Path=/users/**
+        filters:
+          - SetPath=/users.resource/
+      - id: products-service
+        uri: http://localhost:8092
+        predicates:
+          - Path=/products/**
+        filters:
+          - SetPath=/products.resource/
+  security:
+    oauth2:
+      client:
+        registration:
+          gateway:
+            provider: spring
+            client-id: client
+            client-secret: secret
+            scope: openid, profile
+            authorization-grant-type: authorization_code
+            redirect-uri: http://127.0.0.1:8090/login/oauth2/code/gateway
+        provider:
+          spring:
+            issuer-uri: http://localhost:8089
